@@ -19,7 +19,6 @@ repositories {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/fontfixer.accesswidener")
 	mergedMinecraftJar()
 	setFML(new File("F:\\Projects\\IDEA\\Minecraft\\MITE\\FML3\\FishModLoader-v3.3.3.jar"))
 	mods {
@@ -31,7 +30,7 @@ loom {
 }
 
 runClient{
-	args("--username", "Xy_Lose", "--session", "a.a.a.a", "--width", 854, "--height", 480)
+	args("--username", "dev", "--session", "a.a.a.a", "--width", 854, "--height", 480)
 }
 
 dependencies {
@@ -39,7 +38,6 @@ dependencies {
 	mappings loom.fmlMCPMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	implementation files("libs\\RustedIronCore-1.3.5.jar")
 	implementation files(loom.getFML().toPath())
 }
 
