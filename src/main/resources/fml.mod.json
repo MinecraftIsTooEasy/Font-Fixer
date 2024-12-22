@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "fontfixer",
+  "version": "1.0.0",
+  "name": "Font Fixer",
+  "description": "Fixes the TextRenderer",
+  "authors": [
+    "ThexXTURBOXx"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/block-helper",
+    "sources": "https://github.com/ThexXTURBOXx/BlockHelper"
+  },
+  "license": "MIT",
+  "icon": "assets/blockhelper/icon.png",
+  "environment": "*",
+  "mixins": [
+    "fontfixer.mixins.json"
+  ],
+  "depends": {
+  }
+}

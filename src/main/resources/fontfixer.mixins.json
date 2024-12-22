@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "de.thexxturboxx.blockhelper.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "FontRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
