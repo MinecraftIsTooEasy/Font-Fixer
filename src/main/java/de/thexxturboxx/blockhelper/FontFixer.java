@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL11;
 public class FontFixer {
     private static final ResourceLocation[] unicodePageLocations = new ResourceLocation[256];
     public static String FIXER_VERSION = "1";
-    private int[] charWidth = new int[256];
+    private int[] charWidth = new int[Short.MAX_VALUE];
     public int fontTextureName = 0;
     public int FONT_HEIGHT = 9;
     public Random fontRandom = new Random();
