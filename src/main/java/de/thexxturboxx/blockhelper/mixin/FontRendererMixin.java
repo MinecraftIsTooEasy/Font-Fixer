@@ -1,9 +1,9 @@
 package de.thexxturboxx.blockhelper.mixin;
 
-import de.thexxturboxx.blockhelper.FontFixer;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.thexxturboxx.blockhelper.FontFixer;
 import net.minecraft.FontRenderer;
 import net.minecraft.GameSettings;
 import net.minecraft.ResourceLocation;
@@ -12,7 +12,9 @@ import net.xiaoyu233.fml.util.ReflectHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin({FontRenderer.class})
@@ -22,6 +24,11 @@ public class FontRendererMixin {
     @Inject(method = {"<init>"}, at = {@At("TAIL")})
     private void init2(GameSettings par1GameSettings, ResourceLocation par2ResourceLocation, TextureManager par3TextureManager, boolean par4, CallbackInfo ci) {
         registeredFixers.put(ReflectHelper.dyCast(this), new FontFixer(par1GameSettings, par2ResourceLocation, par3TextureManager, par4));
+    }
+
+    @ModifyConstant(method = {"<init>"}, constant = {@Constant(intValue = 256)})
+    private int modifyChanceTableSize(int val) {
+        return Short.MAX_VALUE;
     }
 
     @Overwrite

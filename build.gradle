@@ -20,7 +20,7 @@ repositories {
 
 loom {
 	mergedMinecraftJar()
-	setFML(new File("F:\\Projects\\IDEA\\Minecraft\\MITE\\FML3\\FishModLoader-v3.3.3.jar"))
+	setFML(new File("D:\\Projects\\IDEA\\Minecraft\\MITE\\FishModLoader-v3.4.1.jar"))
 	mods {
 		"FontFixer" {
 			sourceSet sourceSets.main
@@ -30,7 +30,7 @@ loom {
 }
 
 runClient{
-	args("--username", "dev", "--session", "a.a.a.a", "--width", 854, "--height", 480)
+	args("--username", "Dev", "--session", "a.a.a.a", "--width", 854, "--height", 480)
 }
 
 dependencies {

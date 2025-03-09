@@ -1,6 +1,9 @@
 package de.thexxturboxx.blockhelper;
 
-import java.lang.String;
+import net.minecraft.*;
+import org.lwjgl.opengl.GL11;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,10 +12,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import javax.imageio.ImageIO;
 
-import net.minecraft.*;
-import org.lwjgl.opengl.GL11;
+import static org.lwjgl.opengl.GL11.glColor4f;
 
 public class FontFixer {
     private static final ResourceLocation[] unicodePageLocations = new ResourceLocation[256];
@@ -41,6 +42,9 @@ public class FontFixer {
     private boolean underlineStyle = false;
     private boolean strikethroughStyle = false;
     private final ResourceLocation locationFontTexture;
+
+    private final String ASCII = "ÀÁÂÈÊËÍÓÔÕÚßãõğİıŒœŞşŴŵžȇ\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αβΓπΣσμτΦΘΩδ∞∅∈∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■\u0000";
+
 
 //    public FontFixer() {
 //        this.renderEngine = null;
@@ -130,6 +134,32 @@ public class FontFixer {
             this.colorCode[var9] = (var11 & 255) << 16 | (var12 & 255) << 8 | var13 & 255;
         }
 
+        for (int var14 = 0; var14 < 32; ++var14) {
+            int var6 = (var14 >> 3 & 1) * 85;
+            int var20 = (var14 >> 2 & 1) * 170 + var6;
+            int var21 = (var14 >> 1 & 1) * 170 + var6;
+            int var22 = (var14 >> 0 & 1) * 170 + var6;
+            if (var14 == 6) {
+                var20 += 85;
+            }
+
+            if (par1GameSettings.anaglyph) {
+                int var23 = (var20 * 30 + var21 * 59 + var22 * 11) / 100;
+                int var24 = (var20 * 30 + var21 * 70) / 100;
+                int var25 = (var20 * 30 + var22 * 70) / 100;
+                var20 = var23;
+                var21 = var24;
+                var22 = var25;
+            }
+
+            if (var14 >= 16) {
+                var20 /= 4;
+                var21 /= 4;
+                var22 /= 4;
+            }
+
+            this.colorCode[var14] = (var20 & 255) << 16 | (var21 & 255) << 8 | var22 & 255;
+        }
     }
 
     private void readGlyphSizes() {
@@ -142,7 +172,11 @@ public class FontFixer {
     }
 
     private float renderCharAtPos(int par1, char par2, boolean par3) {
-        return par2 == ' ' ? 4.0F : (par1 > 0 && !this.unicodeFlag ? this.renderDefaultChar(par1 + 32, par3) : this.renderUnicodeChar(par2, par3));
+        if (par2 == ' ') {
+            return 4.0F;
+        } else {
+            return (this.ASCII.indexOf(par2) != -1) && !((IGameSetting) Minecraft.getMinecraft().gameSettings).isForceUnicodeFont() ? this.renderDefaultChar(par1, par3) : this.renderUnicodeChar(par2, par3);
+        }
     }
 
     private float renderDefaultChar(int par1, boolean par2) {
@@ -210,6 +244,7 @@ public class FontFixer {
     }
 
     public int drawString(String par1Str, int par2, int par3, int par4) {
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
         return this.drawString(par1Str, par2, par3, par4, false);
     }
 
@@ -291,13 +326,13 @@ public class FontFixer {
         this.strikethroughStyle = false;
     }
 
-    private void renderStringAtPos(String par1Str, boolean par2) {
-        for(int var3 = 0; var3 < par1Str.length(); ++var3) {
-            char var4 = par1Str.charAt(var3);
+    private void renderStringAtPos(String string, boolean shadow) {
+        for(int var3 = 0; var3 < string.length(); ++var3) {
+            char var4 = string.charAt(var3);
             int var5;
             int var6;
-            if (var4 == 167 && var3 + 1 < par1Str.length()) {
-                var5 = "0123456789abcdefklmnor".indexOf(par1Str.toLowerCase().charAt(var3 + 1));
+            if (var4 == 167 && var3 + 1 < string.length()) {
+                var5 = "0123456789abcdefklmnor".indexOf(string.toLowerCase().charAt(var3 + 1));
                 if (var5 < 16) {
                     this.randomStyle = false;
                     this.boldStyle = false;
@@ -308,13 +343,14 @@ public class FontFixer {
                         var5 = 15;
                     }
 
-                    if (par2) {
+                    if (shadow) {
                         var5 += 16;
                     }
 
                     var6 = this.colorCode[var5];
                     this.textColor = var6;
                     GL11.glColor4f((float)(var6 >> 16) / 255.0F, (float)(var6 >> 8 & 255) / 255.0F, (float)(var6 & 255) / 255.0F, this.alpha);
+                    var3 = applyCustomFormatCodes(this, string, shadow, var3);
                 } else if (var5 == 16) {
                     this.randomStyle = true;
                 } else if (var5 == 17) {
@@ -336,20 +372,42 @@ public class FontFixer {
 
                 ++var3;
             } else {
-                var5 = ChatAllowedCharacters.allowedCharacters.indexOf(var4);
-                if (this.randomStyle && var5 > 0) {
+                var5 = this.ASCII.indexOf(var4);
+                if (this.randomStyle && var5 != -1) {
                     do {
-                        var6 = this.fontRandom.nextInt(ChatAllowedCharacters.allowedCharacters.length());
-                    } while(this.charWidth[var5 + 32] != this.charWidth[var6 + 32]);
+                        var6 = this.fontRandom.nextInt(this.charWidth.length);
+                    } while (this.charWidth[var5] != this.charWidth[var6]);
 
                     var5 = var6;
                 }
 
+                float var11 = var5 == -1 ? 0.5F : 1.0F;
+                boolean isUnicodeFlag = (var4 == 0 || var5 == -1) && shadow;
+                if (isUnicodeFlag) {
+                    this.posX -= var11;
+                    this.posY -= var11;
+                }
+
                 float var9 = this.renderCharAtPos(var5, var4, this.italicStyle);
+                if (isUnicodeFlag) {
+                    this.posX += var11;
+                    this.posY += var11;
+                }
+
                 if (this.boldStyle) {
-                    ++this.posX;
+                    this.posX += var11;
+                    if (isUnicodeFlag) {
+                        this.posX -= var11;
+                        this.posY -= var11;
+                    }
+
                     this.renderCharAtPos(var5, var4, this.italicStyle);
-                    --this.posX;
+                    this.posX -= var11;
+                    if (isUnicodeFlag) {
+                        this.posX += var11;
+                        this.posY += var11;
+                    }
+
                     ++var9;
                 }
 
@@ -379,10 +437,30 @@ public class FontFixer {
                     GL11.glEnable(3553);
                 }
 
-                this.posX += (float)((int)var9);
+                this.posX += (float) ((int) var9);
             }
         }
 
+    }
+
+    /**
+     * api for emi
+     */
+    public static int applyCustomFormatCodes(FontFixer subject, String str, boolean shadow, int i) {
+        if (str.charAt(i + 1) == 'x') {
+            int next = str.indexOf(String.valueOf('\u00a7') + "x", i + 1);
+            if (next != -1) {
+                String s = str.substring(i + 1, next);
+                int color = Integer.parseInt(s.replace(String.valueOf('\u00a7'), "").substring(1), 16);
+                if (shadow) {
+                    color = (color & 16579836) >> 2 | color & -16777216;
+                }
+                subject.textColor = color;
+                glColor4f((color >> 16) / 255.0F, (color >> 8 & 255) / 255.0F, (color & 255) / 255.0F, subject.alpha);
+                i += s.length() + 1;
+            }
+        }
+        return i;
     }
 
     private int renderStringAligned(String par1Str, int par2, int par3, int par4, int par5, boolean par6) {
@@ -396,6 +474,9 @@ public class FontFixer {
     }
 
     private int renderString(String par1Str, int par2, int par3, int par4, boolean par5) {
+        if (par1Str != null && this.bidiFlag) {
+            par1Str = this.bidiReorder(par1Str);
+        }
         if (par1Str == null) {
             return 0;
         } else {
@@ -460,9 +541,9 @@ public class FontFixer {
         } else if (par1 == ' ') {
             return 4;
         } else {
-            int var2 = ChatAllowedCharacters.allowedCharacters.indexOf(par1);
-            if (var2 >= 0 && !this.unicodeFlag) {
-                return this.charWidth[var2 + 32];
+            int var2 = this.ASCII.indexOf(par1);
+            if (par1 > 0 && var2 != -1 && !((IGameSetting) Minecraft.getMinecraft().gameSettings).isForceUnicodeFont()) {
+                return this.charWidth[var2];
             } else if (this.glyphWidth[par1] != 0) {
                 int var3 = this.glyphWidth[par1] >>> 4;
                 int var4 = this.glyphWidth[par1] & 15;
